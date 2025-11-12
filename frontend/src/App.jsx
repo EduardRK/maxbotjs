@@ -35,7 +35,7 @@ const App = () => {
       loadStats();
       loadCalendar();
     }
-  }, [currentDate, user]);
+  }, [currentDate, user, selectedDate]);
 
   const initializeUser = async () => {
     let userData = localStorage.getItem('currentUser');
@@ -79,7 +79,7 @@ const App = () => {
     
     try {
       setLoading(true);
-      const dateString = currentDate.toISOString().split('T')[0];
+      const dateString = selectedDate.toISOString().split('T')[0];
       const response = await tasksAPI.getByDate(user.id, dateString);
       setTasks(response.data);
     } catch (error) {
@@ -119,7 +119,7 @@ const App = () => {
     try {
       const taskData = {
         title: newTaskTitle,
-        due_date: currentDate.toISOString().split('T')[0],
+        due_date: selectedDate.toISOString().split('T')[0],
         priority: 'medium'
       };
       
@@ -211,6 +211,14 @@ const App = () => {
     });
   };
 
+  // Обработчик выбора даты в календаре
+  const handleDateSelect = (day) => {
+    if (day.isCurrentMonth) {
+      const newSelectedDate = new Date(day.year, day.month, day.day);
+      setSelectedDate(newSelectedDate);
+    }
+  };
+
   // Генерация дней календаря с реальными данными
   const getDaysInMonth = () => {
     const year = currentDate.getFullYear();
@@ -236,11 +244,18 @@ const App = () => {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       const dayStats = calendarDays.find(day => day.date === dateStr);
       
+      // ПРАВИЛЬНОЕ вычисление выбранной даты
+      const isSelected = 
+        i === selectedDate.getDate() && 
+        month === selectedDate.getMonth() &&
+        year === selectedDate.getFullYear();
+      
       days.push({
         day: i,
         month: month,
         year: year,
         isCurrentMonth: true,
+        isSelected: isSelected,
         hasTasks: dayStats ? dayStats.tasks_completed > 0 : false,
         tasksCompleted: dayStats ? dayStats.tasks_completed : 0
       });
@@ -272,18 +287,19 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      {/* Header with stats button */}
+      {/* Header with stats button - УМЕНЬШЕН ШРИФТ */}
       <header className="bg-white shadow-sm p-4 flex justify-between items-center border-b border-gray-200">
         <button 
           onClick={() => setStatsOpen(true)}
           className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
           aria-label="Статистика"
         >
-          <BarChart3 className="w-5 h-5 mr-2" />
-          <span className="font-medium">Статистика</span>
+          <BarChart3 className="w-4 h-4 mr-2" />
+          <span className="font-medium text-sm">Статистика</span>
         </button>
-        <div className="text-gray-600 font-medium">
-          {currentDate.toLocaleDateString('ru-RU', { 
+        {/* Дата сверху теперь показывает ВЫБРАННУЮ дату */}
+        <div className="text-gray-600 font-medium text-sm">
+          {selectedDate.toLocaleDateString('ru-RU', { 
             weekday: 'long', 
             year: 'numeric', 
             month: 'long', 
@@ -297,7 +313,7 @@ const App = () => {
         {/* Todo List - Top Half */}
         <div className="w-full md:w-1/2 p-4 border-b md:border-b-0 md:border-r border-gray-200 bg-white">
           <div className="max-w-md mx-auto w-full">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Задачи на сегодня</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Задачи на {selectedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}</h2>
             
             {/* Add new task */}
             <div className="flex mb-6">
@@ -418,7 +434,7 @@ const App = () => {
               ))}
               
               {tasks.length === 0 && (
-                <p className="text-center text-gray-500 py-8">Нет задач на сегодня</p>
+                <p className="text-center text-gray-500 py-8">Нет задач на {selectedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}</p>
               )}
             </div>
           </div>
@@ -470,28 +486,21 @@ const App = () => {
                 const isToday = 
                   day.isCurrentMonth && 
                   day.day === new Date().getDate() && 
-                  currentDate.getMonth() === new Date().getMonth() &&
-                  currentDate.getFullYear() === new Date().getFullYear();
-                const isSelected = 
-                  day.isCurrentMonth && 
-                  day.day === selectedDate.getDate() && 
-                  currentDate.getMonth() === selectedDate.getMonth() &&
-                  currentDate.getFullYear() === selectedDate.getFullYear();
+                  day.month === new Date().getMonth() &&
+                  day.year === new Date().getFullYear();
                 
                 return (
                   <button
-                    key={`${day.year}-${day.month}-${day.day}`}
-                    onClick={() => {
-                      if (day.isCurrentMonth) {
-                        setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day.day));
-                      }
-                    }}
+                    key={`${day.year}-${day.month}-${day.day}-${index}`}
+                    onClick={() => handleDateSelect(day)}
                     className={`aspect-square flex flex-col items-center justify-center text-sm transition-colors rounded-lg ${
                       day.isCurrentMonth
-                        ? isToday
+                        ? isToday && day.isSelected
+                          ? 'bg-blue-600 text-white font-medium'
+                          : isToday
                           ? 'bg-blue-100 text-blue-800 font-medium'
-                          : isSelected
-                          ? 'bg-blue-50 text-blue-700 font-medium'
+                          : day.isSelected
+                          ? 'bg-blue-500 text-white font-medium'
                           : day.hasTasks
                           ? 'text-gray-800 hover:bg-gray-100'
                           : 'text-gray-600 hover:bg-gray-50'
@@ -500,7 +509,7 @@ const App = () => {
                     disabled={!day.isCurrentMonth}
                   >
                     <span>{day.day}</span>
-                    {day.isCurrentMonth && day.hasTasks && (
+                    {day.isCurrentMonth && day.hasTasks && !day.isSelected && (
                       <span className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                     )}
                   </button>
