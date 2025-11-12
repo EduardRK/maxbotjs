@@ -1,0 +1,246 @@
+.statistics-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none;
+}
+
+.statistics-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.statistics-modal {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 42rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: scale(0.95);
+  transition: transform 0.3s ease-in-out;
+  pointer-events: auto;
+}
+
+.statistics-modal.visible {
+  transform: scale(1);
+}
+
+.statistics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.statistics-title-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.statistics-title-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #2563eb;
+}
+
+.statistics-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 0;
+}
+
+.statistics-close-btn {
+  color: #6b7280;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.statistics-close-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.statistics-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Stat Cards */
+.stat-card {
+  border-radius: 8px;
+  padding: 1.5rem;
+  background: linear-gradient(to right, var(--gradient-from), var(--gradient-to));
+}
+
+.stat-card-alltime {
+  --gradient-from: #dbeafe;
+  --gradient-to: #e0e7ff;
+}
+
+.stat-card-month {
+  --gradient-from: #dcfce7;
+  --gradient-to: #d1fae5;
+}
+
+.stat-card-week {
+  --gradient-from: #f3e8ff;
+  --gradient-to: #fce7f3;
+}
+
+.stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.stat-title-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stat-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.stat-title {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 1rem;
+}
+
+.stat-numbers {
+  font-size: 1.125rem;
+  font-weight: bold;
+}
+
+.stat-numbers-alltime {
+  color: #2563eb;
+}
+
+.stat-numbers-month {
+  color: #059669;
+}
+
+.stat-numbers-week {
+  color: #7c3aed;
+}
+
+/* Progress Bars */
+.progress-container {
+  width: 100%;
+  background-color: white;
+  border-radius: 9999px;
+  height: 0.75rem;
+}
+
+.progress-bar {
+  height: 0.75rem;
+  border-radius: 9999px;
+  transition: all 0.7s;
+}
+
+.progress-bar-alltime {
+  background: linear-gradient(to right, #3b82f6, #6366f1);
+}
+
+.progress-bar-month {
+  background: linear-gradient(to right, #10b981, #34d399);
+}
+
+.progress-bar-week {
+  background: linear-gradient(to right, #8b5cf6, #a855f7);
+}
+
+.progress-percentage {
+  text-align: right;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.progress-percentage-alltime {
+  color: #2563eb;
+}
+
+.progress-percentage-month {
+  color: #059669;
+}
+
+.progress-percentage-week {
+  color: #7c3aed;
+}
+
+/* Additional Stats */
+.additional-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.stat-box {
+  text-align: center;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.stat-number-total {
+  color: #2563eb;
+}
+
+.stat-number-completed {
+  color: #059669;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* Footer */
+.statistics-footer {
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.statistics-footer-text {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
