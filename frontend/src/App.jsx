@@ -3,6 +3,7 @@ import { Plus, BarChart3, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import Statistics from './components/Statistics';
 import Welcome from './components/Welcome';
 import { usersAPI, tasksAPI, statsAPI } from './services/api';
+import { maxBridge } from './services/maxBridge';
 
 const App = () => {
   // State
@@ -37,11 +38,52 @@ const App = () => {
     }
   }, [currentDate, user, selectedDate]);
 
+  // MAX навигация
+  useEffect(() => {
+    if (maxBridge.isMax) {
+      maxBridge.setupBackButton(() => {
+        if (statsOpen) {
+          setStatsOpen(false);
+          maxBridge.vibrate('light');
+        } else {
+          maxBridge.closeApp();
+        }
+      });
+    }
+  }, [statsOpen]);
+
   const initializeUser = async () => {
+    // Пытаемся получить данные из MAX
+    const maxData = await maxBridge.initialize();
+    
+    if (maxData && maxData.user) {
+      // Авторизация через MAX
+      try {
+        const response = await usersAPI.create({
+          max_user_id: maxData.user.id.toString(),
+          display_name: maxData.user.first_name + (maxData.user.last_name ? ' ' + maxData.user.last_name : ''),
+          username: maxData.user.username || `user_${maxData.user.id}`,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          motivational_message: "Добро пожаловать в MAX! 🚀"
+        });
+        
+        setUser(response.data);
+        setShowWelcome(true);
+        setTimeout(() => setShowWelcome(false), 3000);
+        
+      } catch (error) {
+        console.error('Error creating MAX user:', error);
+        createLocalUser();
+      }
+    } else {
+      createLocalUser();
+    }
+  };
+
+  const createLocalUser = async () => {
     let userData = localStorage.getItem('currentUser');
     
     if (!userData) {
-      // Создаем нового пользователя
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const motivationalMessages = [
         "Пора покорять новые вершины! 🚀",
@@ -127,7 +169,9 @@ const App = () => {
       setTasks(prev => [...prev, response.data]);
       setNewTaskTitle('');
       
-      // Обновляем статистику и календарь
+      // Вибрация при добавлении задачи
+      maxBridge.vibrate('medium');
+      
       loadStats();
       loadCalendar();
     } catch (error) {
@@ -144,7 +188,9 @@ const App = () => {
         task.id === taskId ? { ...task, completed: !task.completed } : task
       ));
       
-      // Обновляем статистику и календарь
+      // Вибрация при выполнении задачи
+      maxBridge.vibrate('light');
+      
       loadStats();
       loadCalendar();
     } catch (error) {
@@ -160,6 +206,7 @@ const App = () => {
       setTasks(prev => prev.map(task => 
         task.id === taskId ? { ...task, priority } : task
       ));
+      maxBridge.vibrate('rigid');
     } catch (error) {
       console.error('Error updating priority:', error);
     }
@@ -174,6 +221,7 @@ const App = () => {
         task.id === taskId ? { ...task, description: editingDescriptionText } : task
       ));
       setEditingDescriptionId(null);
+      maxBridge.vibrate('success');
     } catch (error) {
       console.error('Error saving description:', error);
     }
@@ -185,8 +233,8 @@ const App = () => {
     try {
       await tasksAPI.delete(user.id, taskId);
       setTasks(prev => prev.filter(task => task.id !== taskId));
+      maxBridge.vibrate('heavy');
       
-      // Обновляем статистику и календарь
       loadStats();
       loadCalendar();
     } catch (error) {
@@ -216,6 +264,7 @@ const App = () => {
     if (day.isCurrentMonth) {
       const newSelectedDate = new Date(day.year, day.month, day.day);
       setSelectedDate(newSelectedDate);
+      maxBridge.vibrate('soft');
     }
   };
 
@@ -244,7 +293,6 @@ const App = () => {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       const dayStats = calendarDays.find(day => day.date === dateStr);
       
-      // ПРАВИЛЬНОЕ вычисление выбранной даты
       const isSelected = 
         i === selectedDate.getDate() && 
         month === selectedDate.getMonth() &&
@@ -287,7 +335,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      {/* Header with stats button - УМЕНЬШЕН ШРИФТ */}
+      {/* Header with stats button */}
       <header className="bg-white shadow-sm p-4 flex justify-between items-center border-b border-gray-200">
         <button 
           onClick={() => setStatsOpen(true)}
@@ -297,7 +345,6 @@ const App = () => {
           <BarChart3 className="w-4 h-4 mr-2" />
           <span className="font-medium text-sm">Статистика</span>
         </button>
-        {/* Дата сверху теперь показывает ВЫБРАННУЮ дату */}
         <div className="text-gray-600 font-medium text-sm">
           {selectedDate.toLocaleDateString('ru-RU', { 
             weekday: 'long', 

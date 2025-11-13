@@ -1,53 +1,55 @@
 import { pool } from '../models/database.js';
-import { v4 as uuidv4 } from 'uuid';
 
-const motivationalMessages = [
-  "Пора покорять новые вершины! 🚀",
-  "Каждый день - новая возможность! ✨", 
-  "Ты можешь больше, чем думаешь! 💪",
-  "Маленькие шаги ведут к большим целям! 🎯",
-  "Сегодня - идеальный день для начала! 🌟"
-];
-
+// В методе создания пользователя
 export const createUser = async (req, res) => {
   try {
-    const { username, display_name, timezone = 'UTC' } = req.body;
-    
-    if (!username || !display_name) {
-      return res.status(400).json({ error: 'Username and display_name are required' });
+    const { max_user_id, display_name, username, timezone, motivational_message } = req.body;
+
+    // Если пришли MAX данные - используем max_user_id
+    if (max_user_id) {
+      // Проверяем, есть ли уже пользователь с таким max_user_id
+      const existingUser = await pool.query(
+        'SELECT * FROM users WHERE max_user_id = $1',
+        [max_user_id]
+      );
+
+      if (existingUser.rows.length > 0) {
+        return res.json(existingUser.rows[0]);
+      }
+
+      // Создаем нового пользователя с max_user_id
+      const result = await pool.query(
+        `INSERT INTO users 
+         (max_user_id, display_name, username, timezone, motivational_message) 
+         VALUES ($1, $2, $3, $4, $5) 
+         RETURNING *`,
+        [max_user_id, display_name, username, timezone, motivational_message]
+      );
+      
+      return res.status(201).json(result.rows[0]);
     }
 
-    const id = uuidv4();
-    const motivational_message = motivationalMessages[
-      Math.floor(Math.random() * motivationalMessages.length)
-    ];
+    // Обычная логика для браузера
+    const result = await pool.query(
+      `INSERT INTO users 
+       (display_name, username, timezone, motivational_message) 
+       VALUES ($1, $2, $3, $4) 
+       RETURNING *`,
+      [display_name, username, timezone, motivational_message]
+    );
 
-    const query = `
-      INSERT INTO users (id, username, display_name, timezone, motivational_message) 
-      VALUES ($1, $2, $3, $4, $5) 
-      RETURNING *
-    `;
-    
-    const values = [id, username, display_name, timezone, motivational_message];
-    const result = await pool.query(query, values);
-    
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    if (error.code === '23505') { // Unique violation
-      res.status(400).json({ error: 'Username already exists' });
-    } else {
-      console.error('Error creating user:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
+    console.error('Error creating user:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
+// ДОБАВЬ ЭТИ ДВА МЕТОДА:
 export const getUser = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const query = 'SELECT * FROM users WHERE id = $1';
-    const result = await pool.query(query, [id]);
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -56,27 +58,22 @@ export const getUser = async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error getting user:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: error.message });
   }
 };
 
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { display_name, timezone, motivational_message } = req.body;
+    const { display_name, username, timezone, motivational_message } = req.body;
     
-    const query = `
-      UPDATE users 
-      SET display_name = COALESCE($1, display_name),
-          timezone = COALESCE($2, timezone),
-          motivational_message = COALESCE($3, motivational_message),
-          updated_at = NOW()
-      WHERE id = $4
-      RETURNING *
-    `;
-    
-    const values = [display_name, timezone, motivational_message, id];
-    const result = await pool.query(query, values);
+    const result = await pool.query(
+      `UPDATE users 
+       SET display_name = $1, username = $2, timezone = $3, motivational_message = $4 
+       WHERE id = $5 
+       RETURNING *`,
+      [display_name, username, timezone, motivational_message, id]
+    );
     
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -85,6 +82,6 @@ export const updateUser = async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error updating user:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: error.message });
   }
 };

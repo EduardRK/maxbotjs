@@ -11,6 +11,7 @@ import statsRoutes from './routes/stats.js';
 
 // Middleware
 import { userTimezoneMiddleware } from './middleware/timezone.js';
+import maxAuthMiddleware from './middleware/maxAuth.js'; 
 
 dotenv.config();
 
@@ -30,11 +31,12 @@ const httpRequestDurationMicroseconds = new client.Histogram({
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true
 }));
 app.use(express.json());
 app.use(userTimezoneMiddleware);
+app.use(maxAuthMiddleware);
 
 // Metrics middleware
 app.use((req, res, next) => {

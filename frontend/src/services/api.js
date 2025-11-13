@@ -1,6 +1,6 @@
 import axios from 'axios';
+import { maxBridge } from './maxBridge.js';
 
-// Для Vite используй import.meta.env
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
@@ -8,6 +8,12 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+api.interceptors.request.use((config) => {
+  const maxHeaders = maxBridge.getAuthHeaders();
+  config.headers = { ...config.headers, ...maxHeaders };
+  return config;
 });
 
 // Users API
@@ -19,13 +25,13 @@ export const usersAPI = {
 
 // Tasks API
 export const tasksAPI = {
-  getByDate: (userId, date) => api.get(`/users/${userId}/tasks?date=${date}`),
-  create: (userId, taskData) => api.post(`/users/${userId}/tasks`, taskData),
-  update: (userId, taskId, taskData) => api.put(`/users/${userId}/tasks/${taskId}`, taskData),
-  delete: (userId, taskId) => api.delete(`/users/${userId}/tasks/${taskId}`),
-  toggleComplete: (userId, taskId) => api.patch(`/users/${userId}/tasks/${taskId}/toggle`),
+  getByDate: (userId, date) => api.get(`/tasks/${userId}?date=${date}`),
+  create: (userId, taskData) => api.post(`/tasks/${userId}`, taskData),
+  update: (userId, taskId, taskData) => api.put(`/tasks/${userId}/${taskId}`, taskData),
+  delete: (userId, taskId) => api.delete(`/tasks/${userId}/${taskId}`),
+  toggleComplete: (userId, taskId) => api.patch(`/tasks/${userId}/${taskId}/toggle`),
   updatePriority: (userId, taskId, priority) => 
-    api.patch(`/users/${userId}/tasks/${taskId}/priority`, { priority }),
+    api.patch(`/tasks/${userId}/${taskId}/priority`, { priority }),
 };
 
 // Statistics API

@@ -10,22 +10,23 @@ import {
 
 const router = express.Router();
 
-// GET /api/users/:userId/tasks - Get tasks by date
-router.get('/:userId/tasks', getTasksByDate);
+// ИЗМЕНИ ВСЕ МАРШРУТЫ - убери :userId из пути
+// GET /api/tasks/:userId - Get tasks by date
+router.get('/:userId', getTasksByDate);
 
-// POST /api/users/:userId/tasks - Create new task
-router.post('/:userId/tasks', createTask);
+// POST /api/tasks/:userId - Create new task  
+router.post('/:userId', createTask);
 
-// PUT /api/users/:userId/tasks/:taskId - Update task
-router.put('/:userId/tasks/:taskId', updateTask);
+// PUT /api/tasks/:userId/:taskId - Update task
+router.put('/:userId/:taskId', updateTask);
 
-// DELETE /api/users/:userId/tasks/:taskId - Delete task
-router.delete('/:userId/tasks/:taskId', deleteTask);
+// DELETE /api/tasks/:userId/:taskId - Delete task
+router.delete('/:userId/:taskId', deleteTask);
 
-// PATCH /api/users/:userId/tasks/:taskId/toggle - Toggle task completion
-router.patch('/:userId/tasks/:taskId/toggle', toggleTaskComplete);
+// PATCH /api/tasks/:userId/:taskId/toggle - Toggle task completion
+router.patch('/:userId/:taskId/toggle', toggleTaskComplete);
 
-// PATCH /api/users/:userId/tasks/:taskId/priority - Update task priority
-router.patch('/:userId/tasks/:taskId/priority', updateTaskPriority);
+// PATCH /api/tasks/:userId/:taskId/priority - Update task priority
+router.patch('/:userId/:taskId/priority', updateTaskPriority);
 
 export default router;
