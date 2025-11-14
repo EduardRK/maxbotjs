@@ -33,7 +33,6 @@ export const createTask = async (req, res) => {
       return res.status(400).json({ error: 'Title and due_date are required' });
     }
 
-    // Проверяем существование пользователя
     const userCheck = await pool.query('SELECT id FROM users WHERE id = $1', [userId]);
     if (userCheck.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -49,7 +48,6 @@ export const createTask = async (req, res) => {
     const values = [id, userId, title, description, priority, due_date];
     const result = await pool.query(query, values);
     
-    // Обновляем daily_stats
     await updateDailyStats(userId, due_date);
     
     res.status(201).json(result.rows[0]);
@@ -82,7 +80,6 @@ export const updateTask = async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    // Обновляем daily_stats если изменилась дата
     if (due_date) {
       await updateDailyStats(userId, due_date);
     }
@@ -98,7 +95,6 @@ export const deleteTask = async (req, res) => {
   try {
     const { userId, taskId } = req.params;
 
-    // Получаем задачу перед удалением чтобы знать due_date
     const taskQuery = await pool.query(
       'SELECT due_date FROM tasks WHERE id = $1 AND user_id = $2',
       [taskId, userId]
@@ -113,7 +109,6 @@ export const deleteTask = async (req, res) => {
     const deleteQuery = 'DELETE FROM tasks WHERE id = $1 AND user_id = $2';
     await pool.query(deleteQuery, [taskId, userId]);
 
-    // Обновляем daily_stats
     await updateDailyStats(userId, due_date);
     
     res.json({ success: true, message: 'Task deleted successfully' });
@@ -145,7 +140,6 @@ export const toggleTaskComplete = async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    // Обновляем daily_stats
     const task = result.rows[0];
     await updateDailyStats(userId, task.due_date);
     
@@ -185,7 +179,6 @@ export const updateTaskPriority = async (req, res) => {
   }
 };
 
-// Вспомогательная функция для обновления daily_stats
 const updateDailyStats = async (userId, date) => {
   try {
     const statsQuery = `

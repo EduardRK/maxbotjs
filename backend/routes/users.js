@@ -7,13 +7,10 @@ import {
 
 const router = express.Router();
 
-// POST /api/users - Create new user
 router.post('/', createUser);
 
-// GET /api/users/:id - Get user by ID
 router.get('/:id', getUser);
 
-// PUT /api/users/:id - Update user
 router.put('/:id', updateUser);
 
 export default router;

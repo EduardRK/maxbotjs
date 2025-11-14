@@ -95,7 +95,6 @@ async function initializeDatabase() {
     console.log('✅ Таблицы созданы успешно!');
     console.log('📊 Проверяю созданные таблицы...');
     
-    // Проверяем созданные таблицы
     const tablesCheck = await client.query(`
       SELECT table_name 
       FROM information_schema.tables 
@@ -107,7 +106,6 @@ async function initializeDatabase() {
       console.log(`   - ${row.table_name}`);
     });
     
-    // Проверяем тестовые данные
     const usersCheck = await client.query('SELECT COUNT(*) as user_count FROM users');
     const tasksCheck = await client.query('SELECT COUNT(*) as task_count FROM tasks');
     

@@ -16,14 +16,12 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Users API
 export const usersAPI = {
   create: (userData) => api.post('/users', userData),
   getById: (userId) => api.get(`/users/${userId}`),
   update: (userId, userData) => api.put(`/users/${userId}`, userData),
 };
 
-// Tasks API
 export const tasksAPI = {
   getByDate: (userId, date) => api.get(`/tasks/${userId}?date=${date}`),
   create: (userId, taskData) => api.post(`/tasks/${userId}`, taskData),
@@ -34,7 +32,6 @@ export const tasksAPI = {
     api.patch(`/tasks/${userId}/${taskId}/priority`, { priority }),
 };
 
-// Statistics API
 export const statsAPI = {
   getSummary: (userId) => api.get(`/users/${userId}/stats/summary`),
   getCalendar: (userId, year, month) => 

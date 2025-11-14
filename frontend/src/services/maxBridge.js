@@ -21,7 +21,6 @@ class MaxBridgeService {
     };
   }
 
-  // MAX-specific features
   showBackButton() {
     if (this.isMax) {
       this.webApp.BackButton.show();

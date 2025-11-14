@@ -1,4 +1,3 @@
-// Middleware для работы с часовыми поясами
 export const convertToUserTimezone = (date, timezone = 'UTC') => {
   if (!date) return null;
   
@@ -42,13 +41,10 @@ export const getEndOfDayInTimezone = (timezone = 'UTC') => {
   return userNow;
 };
 
-// Middleware для установки часового пояса пользователя
 export const userTimezoneMiddleware = (req, res, next) => {
-  // Если в запросе есть часовой пояс пользователя, используем его
   if (req.headers['user-timezone']) {
     req.userTimezone = req.headers['user-timezone'];
   } else {
-    // Иначе используем UTC по умолчанию
     req.userTimezone = 'UTC';
   }
   next();

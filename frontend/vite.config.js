@@ -7,12 +7,10 @@ export default defineConfig({
     host: true,
     port: 3000
   },
-  // Добавь для Docker сборки
   build: {
     outDir: 'dist',
     sourcemap: false
   },
-  // Прокси API запросов в dev режиме
   server: {
     proxy: {
       '/api': {

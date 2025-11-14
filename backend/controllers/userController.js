@@ -1,13 +1,10 @@
 import { pool } from '../models/database.js';
 
-// В методе создания пользователя
 export const createUser = async (req, res) => {
   try {
     const { max_user_id, display_name, username, timezone, motivational_message } = req.body;
 
-    // Если пришли MAX данные - используем max_user_id
     if (max_user_id) {
-      // Проверяем, есть ли уже пользователь с таким max_user_id
       const existingUser = await pool.query(
         'SELECT * FROM users WHERE max_user_id = $1',
         [max_user_id]
@@ -17,7 +14,6 @@ export const createUser = async (req, res) => {
         return res.json(existingUser.rows[0]);
       }
 
-      // Создаем нового пользователя с max_user_id
       const result = await pool.query(
         `INSERT INTO users 
          (max_user_id, display_name, username, timezone, motivational_message) 
@@ -29,7 +25,6 @@ export const createUser = async (req, res) => {
       return res.status(201).json(result.rows[0]);
     }
 
-    // Обычная логика для браузера
     const result = await pool.query(
       `INSERT INTO users 
        (display_name, username, timezone, motivational_message) 
@@ -45,7 +40,6 @@ export const createUser = async (req, res) => {
   }
 };
 
-// ДОБАВЬ ЭТИ ДВА МЕТОДА:
 export const getUser = async (req, res) => {
   try {
     const { id } = req.params;

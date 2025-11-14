@@ -1,7 +1,6 @@
 import { pool } from './database.js';
 
 export class User {
-  // Создание нового пользователя
   static async create(userData) {
     const { username, display_name, timezone = 'UTC', motivational_message } = userData;
     
@@ -16,21 +15,18 @@ export class User {
     return result.rows[0];
   }
 
-  // Поиск пользователя по ID
   static async findById(id) {
     const query = 'SELECT * FROM users WHERE id = $1';
     const result = await pool.query(query, [id]);
     return result.rows[0];
   }
 
-  // Поиск пользователя по username
   static async findByUsername(username) {
     const query = 'SELECT * FROM users WHERE username = $1';
     const result = await pool.query(query, [username]);
     return result.rows[0];
   }
 
-  // Обновление пользователя
   static async update(id, updateData) {
     const { display_name, timezone, motivational_message } = updateData;
     
@@ -49,28 +45,24 @@ export class User {
     return result.rows[0];
   }
 
-  // Удаление пользователя
   static async delete(id) {
     const query = 'DELETE FROM users WHERE id = $1 RETURNING *';
     const result = await pool.query(query, [id]);
     return result.rows[0];
   }
 
-  // Получение всех пользователей (для админки)
   static async findAll(limit = 100, offset = 0) {
     const query = 'SELECT * FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2';
     const result = await pool.query(query, [limit, offset]);
     return result.rows;
   }
 
-  // Проверка существования пользователя
   static async exists(id) {
     const query = 'SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)';
     const result = await pool.query(query, [id]);
     return result.rows[0].exists;
   }
 
-  // Получение статистики пользователя
   static async getUserStats(userId) {
     const tasksQuery = `
       SELECT 

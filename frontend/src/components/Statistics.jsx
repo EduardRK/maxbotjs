@@ -19,14 +19,12 @@ const Statistics = ({ isOpen, onClose, statsData }) => {
     setTimeout(onClose, 300);
   };
 
-  // Обработчик клика вне модального окна
   const handleOverlayClick = (e) => {
     if (modalRef.current && !modalRef.current.contains(e.target)) {
       handleClose();
     }
   };
 
-  // Обработчик нажатия Escape
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape' && isOpen) {
@@ -62,7 +60,6 @@ const Statistics = ({ isOpen, onClose, statsData }) => {
         ref={modalRef}
         className={`statistics-modal ${isVisible ? 'visible' : ''}`}
       >
-        {/* Header */}
         <div className="statistics-header">
           <div className="statistics-title-container">
             <TrendingUp className="statistics-title-icon" />
@@ -76,9 +73,7 @@ const Statistics = ({ isOpen, onClose, statsData }) => {
           </button>
         </div>
 
-        {/* Stats Content */}
         <div className="statistics-content">
-          {/* All time stats */}
           <div className="stat-card stat-card-alltime">
             <div className="stat-header">
               <div className="stat-title-container">
@@ -100,7 +95,6 @@ const Statistics = ({ isOpen, onClose, statsData }) => {
             </div>
           </div>
 
-          {/* Last month stats */}
           <div className="stat-card stat-card-month">
             <div className="stat-header">
               <div className="stat-title-container">
@@ -122,7 +116,6 @@ const Statistics = ({ isOpen, onClose, statsData }) => {
             </div>
           </div>
 
-          {/* Last week stats */}
           <div className="stat-card stat-card-week">
             <div className="stat-header">
               <div className="stat-title-container">
@@ -144,7 +137,6 @@ const Statistics = ({ isOpen, onClose, statsData }) => {
             </div>
           </div>
 
-          {/* Additional stats */}
           <div className="additional-stats">
             <div className="stat-box">
               <div className="stat-number stat-number-total">{statsData.allTime.total}</div>
@@ -157,7 +149,6 @@ const Statistics = ({ isOpen, onClose, statsData }) => {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="statistics-footer">
           <div className="statistics-footer-text">
             Данные обновляются в реальном времени

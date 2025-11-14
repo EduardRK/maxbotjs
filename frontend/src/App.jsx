@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, BarChart3, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, BarChart3, Info, ChevronLeft, ChevronRight, Target } from 'lucide-react';
 import Statistics from './components/Statistics';
 import Welcome from './components/Welcome';
+import Focus from './components/Focus';
 import { usersAPI, tasksAPI, statsAPI } from './services/api';
 import { maxBridge } from './services/maxBridge';
 
 const App = () => {
-  // State
   const [tasks, setTasks] = useState([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [statsOpen, setStatsOpen] = useState(false);
+  const [focusOpen, setFocusOpen] = useState(false);
   const [editingDescriptionId, setEditingDescriptionId] = useState(null);
   const [editingDescriptionText, setEditingDescriptionText] = useState('');
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -24,12 +25,10 @@ const App = () => {
   const [calendarDays, setCalendarDays] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Инициализация пользователя
   useEffect(() => {
     initializeUser();
   }, []);
 
-  // Загрузка данных при изменении даты или пользователя
   useEffect(() => {
     if (user) {
       loadTasks();
@@ -38,26 +37,26 @@ const App = () => {
     }
   }, [currentDate, user, selectedDate]);
 
-  // MAX навигация
   useEffect(() => {
     if (maxBridge.isMax) {
       maxBridge.setupBackButton(() => {
         if (statsOpen) {
           setStatsOpen(false);
           maxBridge.vibrate('light');
+        } else if (focusOpen) {
+          setFocusOpen(false);
+          maxBridge.vibrate('light');
         } else {
           maxBridge.closeApp();
         }
       });
     }
-  }, [statsOpen]);
+  }, [statsOpen, focusOpen]);
 
   const initializeUser = async () => {
-    // Пытаемся получить данные из MAX
     const maxData = await maxBridge.initialize();
     
     if (maxData && maxData.user) {
-      // Авторизация через MAX
       try {
         const response = await usersAPI.create({
           max_user_id: maxData.user.id.toString(),
@@ -169,7 +168,6 @@ const App = () => {
       setTasks(prev => [...prev, response.data]);
       setNewTaskTitle('');
       
-      // Вибрация при добавлении задачи
       maxBridge.vibrate('medium');
       
       loadStats();
@@ -188,7 +186,6 @@ const App = () => {
         task.id === taskId ? { ...task, completed: !task.completed } : task
       ));
       
-      // Вибрация при выполнении задачи
       maxBridge.vibrate('light');
       
       loadStats();
@@ -242,7 +239,6 @@ const App = () => {
     }
   };
 
-  // Навигация по календарю
   const prevMonth = () => {
     setCurrentDate(prev => {
       const newDate = new Date(prev);
@@ -259,7 +255,6 @@ const App = () => {
     });
   };
 
-  // Обработчик выбора даты в календаре
   const handleDateSelect = (day) => {
     if (day.isCurrentMonth) {
       const newSelectedDate = new Date(day.year, day.month, day.day);
@@ -268,7 +263,6 @@ const App = () => {
     }
   };
 
-  // Генерация дней календаря с реальными данными
   const getDaysInMonth = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -277,7 +271,6 @@ const App = () => {
     
     const days = [];
     
-    // Предыдущий месяц
     const prevMonthDays = new Date(year, month, 0).getDate();
     for (let i = firstDayOfMonth - 1; i >= 0; i--) {
       days.push({
@@ -288,7 +281,6 @@ const App = () => {
       });
     }
     
-    // Текущий месяц с реальными данными
     for (let i = 1; i <= daysInMonth; i++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       const dayStats = calendarDays.find(day => day.date === dateStr);
@@ -309,7 +301,6 @@ const App = () => {
       });
     }
     
-    // Следующий месяц
     const daysToAdd = 42 - days.length;
     for (let i = 1; i <= daysToAdd; i++) {
       days.push({
@@ -335,16 +326,25 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      {/* Header with stats button */}
       <header className="bg-white shadow-sm p-4 flex justify-between items-center border-b border-gray-200">
-        <button 
-          onClick={() => setStatsOpen(true)}
-          className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-          aria-label="Статистика"
-        >
-          <BarChart3 className="w-4 h-4 mr-2" />
-          <span className="font-medium text-sm">Статистика</span>
-        </button>
+        <div className="flex space-x-4">
+          <button 
+            onClick={() => setStatsOpen(true)}
+            className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+            aria-label="Статистика"
+          >
+            <BarChart3 className="w-4 h-4 mr-2" />
+            <span className="font-medium text-sm">Статистика</span>
+          </button>
+          <button 
+            onClick={() => setFocusOpen(true)}
+            className="flex items-center text-green-600 hover:text-green-800 transition-colors"
+            aria-label="Фокус"
+          >
+            <Target className="w-4 h-4 mr-2" />
+            <span className="font-medium text-sm">Фокус</span>
+          </button>
+        </div>
         <div className="text-gray-600 font-medium text-sm">
           {selectedDate.toLocaleDateString('ru-RU', { 
             weekday: 'long', 
@@ -355,14 +355,11 @@ const App = () => {
         </div>
       </header>
 
-      {/* Main content: Todo list + Calendar */}
       <div className="flex-1 flex flex-col md:flex-row">
-        {/* Todo List - Top Half */}
         <div className="w-full md:w-1/2 p-4 border-b md:border-b-0 md:border-r border-gray-200 bg-white">
           <div className="max-w-md mx-auto w-full">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Задачи на {selectedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}</h2>
             
-            {/* Add new task */}
             <div className="flex mb-6">
               <input
                 type="text"
@@ -381,7 +378,6 @@ const App = () => {
               </button>
             </div>
             
-            {/* Tasks list */}
             <div className="space-y-3">
               {tasks.map(task => (
                 <div 
@@ -392,7 +388,6 @@ const App = () => {
                 >
                   <div className="flex items-start">
                     <div className="flex flex-col items-center mr-3 mt-1">
-                      {/* Priority selector button */}
                       <div className="relative group">
                         <button
                           onClick={() => {
@@ -447,7 +442,6 @@ const App = () => {
                         </p>
                       </div>
                       
-                      {/* Description editing */}
                       {editingDescriptionId === task.id ? (
                         <div className="mt-2">
                           <textarea
@@ -487,12 +481,10 @@ const App = () => {
           </div>
         </div>
         
-        {/* Calendar - Bottom Half */}
         <div className="w-full md:w-1/2 p-4 bg-white">
           <div className="max-w-md mx-auto w-full">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Календарь</h2>
             
-            {/* Calendar header with month navigation */}
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={prevMonth}
@@ -513,7 +505,6 @@ const App = () => {
               </button>
             </div>
             
-            {/* Calendar days header */}
             <div className="grid grid-cols-7 gap-1 mb-2">
               {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, index) => (
                 <div 
@@ -527,7 +518,6 @@ const App = () => {
               ))}
             </div>
             
-            {/* Calendar grid */}
             <div className="grid grid-cols-7 gap-1">
               {days.map((day, index) => {
                 const isToday = 
@@ -567,11 +557,15 @@ const App = () => {
         </div>
       </div>
       
-      {/* Statistics Modal */}
       <Statistics 
         isOpen={statsOpen}
         onClose={() => setStatsOpen(false)}
         statsData={statsData}
+      />
+      
+      <Focus 
+        isOpen={focusOpen}
+        onClose={() => setFocusOpen(false)}
       />
     </div>
   );

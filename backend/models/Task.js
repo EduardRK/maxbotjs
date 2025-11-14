@@ -1,7 +1,6 @@
 import { pool } from './database.js';
 
 export class Task {
-  // Создание новой задачи
   static async create(taskData) {
     const { user_id, title, description, priority = 'medium', due_date } = taskData;
     
@@ -16,7 +15,6 @@ export class Task {
     return result.rows[0];
   }
 
-  // Поиск задачи по ID
   static async findById(id, userId = null) {
     let query = 'SELECT * FROM tasks WHERE id = $1';
     let values = [id];
@@ -30,7 +28,6 @@ export class Task {
     return result.rows[0];
   }
 
-  // Получение задач пользователя за определенную дату
   static async findByUserAndDate(userId, date, options = {}) {
     const { completed = null, priority = null } = options;
     
@@ -53,7 +50,6 @@ export class Task {
     return result.rows;
   }
 
-  // Получение всех задач пользователя
   static async findByUser(userId, options = {}) {
     const { limit = 100, offset = 0, completed = null, priority = null } = options;
     
@@ -80,7 +76,6 @@ export class Task {
     return result.rows;
   }
 
-  // Обновление задачи
   static async update(id, userId, updateData) {
     const { title, description, priority, due_date, completed } = updateData;
     
@@ -106,14 +101,12 @@ export class Task {
     return result.rows[0];
   }
 
-  // Удаление задачи
   static async delete(id, userId) {
     const query = 'DELETE FROM tasks WHERE id = $1 AND user_id = $2 RETURNING *';
     const result = await pool.query(query, [id, userId]);
     return result.rows[0];
   }
 
-  // Переключение статуса выполнения
   static async toggleComplete(id, userId) {
     const query = `
       UPDATE tasks 
@@ -131,7 +124,6 @@ export class Task {
     return result.rows[0];
   }
 
-  // Обновление приоритета
   static async updatePriority(id, userId, priority) {
     const query = `
       UPDATE tasks 
@@ -144,7 +136,6 @@ export class Task {
     return result.rows[0];
   }
 
-  // Получение просроченных задач
   static async getOverdueTasks(userId) {
     const query = `
       SELECT * FROM tasks 
@@ -158,7 +149,6 @@ export class Task {
     return result.rows;
   }
 
-  // Получение задач на сегодня
   static async getTodayTasks(userId) {
     const query = `
       SELECT * FROM tasks 
@@ -171,7 +161,6 @@ export class Task {
     return result.rows;
   }
 
-  // Получение статистики по приоритетам
   static async getPriorityStats(userId) {
     const query = `
       SELECT 

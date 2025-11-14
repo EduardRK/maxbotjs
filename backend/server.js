@@ -4,12 +4,10 @@ import dotenv from 'dotenv';
 import { pool } from './models/database.js';
 import client from 'prom-client';
 
-// Routes
 import userRoutes from './routes/users.js';
 import taskRoutes from './routes/tasks.js';
 import statsRoutes from './routes/stats.js';
 
-// Middleware
 import { userTimezoneMiddleware } from './middleware/timezone.js';
 import maxAuthMiddleware from './middleware/maxAuth.js'; 
 
@@ -18,7 +16,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Prometheus metrics
 const collectDefaultMetrics = client.collectDefaultMetrics;
 collectDefaultMetrics({ timeout: 5000 });
 
@@ -29,7 +26,6 @@ const httpRequestDurationMicroseconds = new client.Histogram({
   buckets: [0.1, 5, 15, 50, 100, 500]
 });
 
-// Middleware
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true
@@ -38,18 +34,15 @@ app.use(express.json());
 app.use(userTimezoneMiddleware);
 app.use(maxAuthMiddleware);
 
-// Metrics middleware
 app.use((req, res, next) => {
   res.locals.startEpoch = Date.now();
   next();
 });
 
-// Routes
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/stats', statsRoutes);
 
-// Prometheus metrics endpoint
 app.get('/metrics', async (req, res) => {
   try {
     res.set('Content-Type', client.register.contentType);
@@ -59,7 +52,6 @@ app.get('/metrics', async (req, res) => {
   }
 });
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -68,7 +60,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Test database connection
 app.get('/api/test-db', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
@@ -83,12 +74,10 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
-// 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Error handler
 app.use((error, req, res, next) => {
   console.error('Server error:', error);
   res.status(500).json({ 
@@ -97,7 +86,6 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Response time metrics
 app.use((req, res, next) => {
   const responseTimeInMs = Date.now() - res.locals.startEpoch;
   httpRequestDurationMicroseconds
@@ -106,7 +94,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 API available at http://localhost:${PORT}/api`);

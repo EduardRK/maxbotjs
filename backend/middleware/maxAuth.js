@@ -1,5 +1,5 @@
 const verifyMaxInitData = (initData) => {
-  return true; // Пока пропускаем все
+  return true;
 };
 
 const maxAuthMiddleware = (req, res, next) => {

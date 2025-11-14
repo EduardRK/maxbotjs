@@ -4,13 +4,11 @@ export const getStatsSummary = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Проверяем существование пользователя
     const userCheck = await pool.query('SELECT id FROM users WHERE id = $1', [userId]);
     if (userCheck.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Все время
     const allTimeQuery = `
       SELECT 
         COUNT(*) as total,
@@ -19,7 +17,6 @@ export const getStatsSummary = async (req, res) => {
       WHERE user_id = $1
     `;
 
-    // Последний месяц
     const lastMonthQuery = `
       SELECT 
         COUNT(*) as total,
@@ -30,7 +27,6 @@ export const getStatsSummary = async (req, res) => {
         AND due_date <= CURRENT_DATE
     `;
 
-    // Последняя неделя
     const lastWeekQuery = `
       SELECT 
         COUNT(*) as total,
@@ -78,7 +74,6 @@ export const getCalendarStats = async (req, res) => {
       return res.status(400).json({ error: 'Year and month parameters are required' });
     }
 
-    // Проверяем существование пользователя
     const userCheck = await pool.query('SELECT id FROM users WHERE id = $1', [userId]);
     if (userCheck.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -102,7 +97,6 @@ export const getCalendarStats = async (req, res) => {
     
     const result = await pool.query(query, [userId, startDate, endDate]);
     
-    // Заполняем пропущенные дни
     const filledStats = fillMissingDays(result.rows, year, month);
     
     res.json(filledStats);
@@ -137,7 +131,6 @@ export const getDailyStats = async (req, res) => {
   }
 };
 
-// Вспомогательная функция для заполнения пропущенных дней
 const fillMissingDays = (stats, year, month) => {
   const daysInMonth = new Date(year, month, 0).getDate();
   const filledStats = [];

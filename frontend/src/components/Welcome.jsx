@@ -25,7 +25,6 @@ const Welcome = ({ user, onClose }) => {
     <div className={`welcome-overlay ${isVisible ? 'visible' : ''}`}>
       <div className={`welcome-modal ${isVisible ? 'visible' : ''}`}>
         
-        {/* Заголовок */}
         <div className={`welcome-header ${showHeader ? 'visible' : ''}`}>
           <h1 className="welcome-title">
             Привет! 👋
@@ -33,7 +32,6 @@ const Welcome = ({ user, onClose }) => {
           <div className="welcome-divider"></div>
         </div>
 
-        {/* Сообщение */}
         <div className={`welcome-message ${showMessage ? 'visible' : ''}`}>
           <p className="welcome-text">
             {user.motivational_message}
@@ -43,14 +41,12 @@ const Welcome = ({ user, onClose }) => {
           </p>
         </div>
 
-        {/* Анимированные точки */}
         <div className={`welcome-dots ${showDots ? 'visible' : ''}`}>
           <div className="welcome-dot"></div>
           <div className="welcome-dot"></div>
           <div className="welcome-dot"></div>
         </div>
 
-        {/* Кнопка */}
         <div className={`welcome-button-container ${showButton ? 'visible' : ''}`}>
           <button
             onClick={handleClose}
